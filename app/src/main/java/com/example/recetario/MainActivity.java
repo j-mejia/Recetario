@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
 
             case DELETE:
+                alert("deletes");
                 return true;
             case EXIST:
                 finish();
@@ -136,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
             }else{
                 if (act.equals("see")){
                     content = getReceta();
-                    Intent intent = new Intent(MainActivity.this,AgregarReceta.class);
+                    Intent intent = new Intent(MainActivity.this,VerReceta.class);
                     intent.putExtra("title",getTitle);
                     intent.putExtra("content",content);
                     startActivity(intent);
