@@ -1,20 +1,27 @@
 package com.example.recetario;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     ListView lista;
     TextView textLista;
     AdaptadorBD DB;
-    List<String> Item = null;
+    List<String> item = null;
     String getTitle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +41,14 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         textLista = (TextView) findViewById(R.id.textView_Lista);
         lista = (ListView) findViewById(R.id.listView_Lista);
+        lista.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                getTitle = (String) lista.getItemAtPosition(position);
+                alert("list");
+            }
+        });
+        showRecetas();
     }
 
     @Override
@@ -69,6 +84,39 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+    private void showRecetas() {
+        DB = new AdaptadorBD(this);
+        Cursor c = DB.getRecetas();
+        item = new ArrayList<String>();
+        String title = "";
+        if (c.moveToFirst() == false){
+            textLista.setText("No hay Recetas");
+        }else {
+            do {
+                title = c.getString(1);
+                item.add(title);
+            }while(c.moveToNext());
+        }
+        ArrayAdapter<String> adaptador =
+                new ArrayAdapter<String>(this,
+                        android.R.layout.simple_list_item_1, item);
+        lista.setAdapter(adaptador);
+
+    }
+
+    public String getReceta(){
+        String type ="",content = "";
+        DB = new AdaptadorBD(this);
+        Cursor c = DB.getReceta(getTitle);
+        if (c.moveToFirst()){
+            do {
+                content = c.getString(2);
+            }while(c.moveToNext());
+        }
+        return content;
+    }
+
     public void actividad(String act){
         String type ="",content = "";
         if (act.equals("add")){
@@ -76,6 +124,82 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this,AgregarReceta.class);
             intent.putExtra("type",type);
             startActivity(intent);
+        }else{
+            if(act.equals("edit")){
+                type = "edit";
+                content = getReceta();
+                Intent intent = new Intent(MainActivity.this,AgregarReceta.class);
+                intent.putExtra("type",type);
+                intent.putExtra("title",getTitle);
+                intent.putExtra("content",content);
+                startActivity(intent);
+            }else{
+                if (act.equals("see")){
+                    content = getReceta();
+                    Intent intent = new Intent(MainActivity.this,AgregarReceta.class);
+                    intent.putExtra("title",getTitle);
+                    intent.putExtra("content",content);
+                    startActivity(intent);
+                }
+            }
+        }
+    }
+    private void alert (String f){
+        AlertDialog alerta;
+        alerta = new AlertDialog.Builder(this).create();
+        if(f.equals("list")){
+            alerta.setTitle("Titulo de la Receta: "+getTitle);
+            alerta.setMessage("¿Qué acción desea realizar?");
+            alerta.setButton(Dialog.BUTTON_POSITIVE,"Ver Receta", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which){
+                    actividad("see");
+                }
+            });
+            alerta.setButton(Dialog.BUTTON_NEGATIVE,"Borrar Receta", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which){
+                    delete("delete");
+                    Intent intent = getIntent();
+                    startActivity(intent);
+                }
+            });
+            alerta.setButton(Dialog.BUTTON_NEUTRAL,"Editar Receta", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which){
+                    actividad("edit");
+                }
+            });
+        }else{
+            if(f.equals("deletes")){
+                alerta.setTitle("Mensaje de Confirmación");
+                alerta.setMessage("¿Qué acción desea realizar?");
+                alerta.setButton(Dialog.BUTTON_NEGATIVE,"Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                       return;
+                    }
+                });
+                alerta.setButton(Dialog.BUTTON_POSITIVE,"Borrar Receta", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                        delete("deletes");
+                        Intent intent = getIntent();
+                        startActivity(intent);
+                    }
+                });
+            }
+        }
+        alerta.show();
+    }
+    private void delete(String f){
+        DB = new AdaptadorBD(this);
+        if(f.equals("delete")){
+            DB.deleteReceta(getTitle);
+        }else {
+            if(f.equals("deletes")){
+                DB.deleteRecetas();
+            }
         }
     }
 }
