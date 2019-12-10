@@ -24,7 +24,17 @@
             android:label="@string/add_receta"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.AgregarNota" />
+                <action android:name="android.intent.action.AgregarReceta" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".VerReceta"
+            android:label="@string/ver_receta"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VerReceta" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
