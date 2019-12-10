@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 public class AgregarReceta extends AppCompatActivity {
     Button Add;
@@ -27,7 +28,8 @@ public class AgregarReceta extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.agregar_receta);
-
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         Add = (Button) findViewById(R.id.button_Add);
         TITLE = (EditText)findViewById(R.id.editText_Titulo);
         CONTENT = (EditText)findViewById(R.id.editText_Receta);
@@ -115,7 +117,17 @@ public class AgregarReceta extends AppCompatActivity {
                 }
             }
         }else{
-
+            if (type.equals("edit")){
+                Add.setText("Update receta");
+                if(title.equals("")){
+                    msj = "Ingrese la receta";
+                    TITLE.requestFocus();
+                    Mensaje(msj);
+                }else {
+                    DB.updateReceta(title,content,getTitle);
+                    actividad(title,content);
+                }
+            }
         }
     }
 
